@@ -1,46 +1,55 @@
-package gotify
+package posix
 
 import (
 	"encoding/base64"
 	"errors"
+	"github.com/farwydi/gotify"
 	"net/smtp"
 	"strings"
 )
 
-type PosixAdapterOptions struct {
-	SmtpAddr string
-	From     string
-	To       []string
-}
-
-func (o PosixAdapterOptions) init() (ad adapter, err error) {
-	if o.SmtpAddr == "" {
-		return nil,
-			errors.New("posixAdapter: options 'SmtpAddr' must be not equal empty string")
+func NewPosixAdapter(from string, to []string, smtpAddr string) func() (gotify.Adapter, error) {
+	if smtpAddr == "" {
+		return func() (gotify.Adapter, error) {
+			return nil,
+				errors.New("posixAdapter: options 'SmtpAddr' must be not equal empty string")
+		}
 	}
 
-	if len(o.To) == 0 {
-		return nil,
-			errors.New("posixAdapter: options 'To' must be not equal empty array")
+	if len(to) == 0 {
+		return func() (gotify.Adapter, error) {
+			return nil,
+				errors.New("posixAdapter: options 'To' must be not equal empty array")
+		}
 	}
 
-	if o.From == "" {
-		o.From = "notify@immo.ru"
+	if from == "" {
+		return func() (gotify.Adapter, error) {
+			return nil,
+				errors.New("posixAdapter: options 'From' must be not equal empty string")
+		}
 	}
 
-	return &posixAdapter{
-		PosixAdapterOptions: o,
-	}, nil
+	return func() (gotify.Adapter, error) {
+		return &posixAdapter{
+			conn:     nil,
+			smtpAddr: smtpAddr,
+			from:     from,
+			to:       to,
+		}, nil
+	}
 }
 
 type posixAdapter struct {
-	PosixAdapterOptions
-	conn *smtp.Client
+	conn     *smtp.Client
+	smtpAddr string
+	from     string
+	to       []string
 }
 
 func (ad *posixAdapter) connect() (err error) {
 	if ad.conn == nil {
-		ad.conn, err = smtp.Dial(ad.SmtpAddr)
+		ad.conn, err = smtp.Dial(ad.smtpAddr)
 		if err != nil {
 			return err
 		}
@@ -49,16 +58,16 @@ func (ad *posixAdapter) connect() (err error) {
 	return nil
 }
 
-func (posixAdapter) Format(text []Line) []byte {
+func (posixAdapter) Format(text []gotify.Line) []byte {
 	size := 0
 	for _, tx := range text {
 		for _, element := range tx {
 			switch t := element.(type) {
-			case CODE:
+			case gotify.CODE:
 				size += len(t) + 11
-			case B:
+			case gotify.B:
 				size += len(t) + 7
-			case TextElement:
+			case gotify.TextElement:
 				size += len(t)
 			case string:
 				size += len(t)
@@ -77,17 +86,17 @@ func (posixAdapter) Format(text []Line) []byte {
 	for _, tx := range text {
 		for _, element := range tx {
 			switch t := element.(type) {
-			case CODE:
+			case gotify.CODE:
 				n += copy(complete[n:], "<pre>")
 				n += copy(complete[n:], t)
 				n += copy(complete[n:], "</pre>")
 			case string:
 				n += copy(complete[n:], t)
-			case B:
+			case gotify.B:
 				n += copy(complete[n:], "<b>")
 				n += copy(complete[n:], t)
 				n += copy(complete[n:], "</b>")
-			case TextElement:
+			case gotify.TextElement:
 				n += copy(complete[n:], t)
 			}
 		}
@@ -97,22 +106,22 @@ func (posixAdapter) Format(text []Line) []byte {
 	return complete
 }
 
-func (ad *posixAdapter) send(subject string, message ...Line) error {
+func (ad posixAdapter) Send(subject string, message ...gotify.Line) error {
 	r := strings.NewReplacer("\r\n", "", "\r", "", "\n", "", "%0a", "", "%0d", "")
 
-	c, err := smtp.Dial(ad.SmtpAddr)
+	c, err := smtp.Dial(ad.smtpAddr)
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 
-	if err = c.Mail(r.Replace(ad.From)); err != nil {
+	if err = c.Mail(r.Replace(ad.from)); err != nil {
 		return err
 	}
 
-	for i := range ad.To {
-		ad.To[i] = r.Replace(ad.To[i])
-		if err = c.Rcpt(ad.To[i]); err != nil {
+	for i := range ad.to {
+		ad.to[i] = r.Replace(ad.to[i])
+		if err = c.Rcpt(ad.to[i]); err != nil {
 			return err
 		}
 	}
@@ -122,8 +131,8 @@ func (ad *posixAdapter) send(subject string, message ...Line) error {
 		return err
 	}
 
-	msg := "To: " + strings.Join(ad.To, ",") + "\r\n" +
-		"From: " + ad.From + "\r\n" +
+	msg := "To: " + strings.Join(ad.to, ",") + "\r\n" +
+		"From: " + ad.from + "\r\n" +
 		"Subject: " + subject + "\r\n" +
 		"Content-Type: text/html; charset=\"UTF-8\"\r\n" +
 		"Content-Transfer-Encoding: base64\r\n" +

@@ -1,43 +1,38 @@
 package gotify
 
 import (
-	"net/http"
-	"net/url"
-	"os"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestNewClient(t *testing.T) {
-	os.Unsetenv("HTTP_PROXY")
-	os.Unsetenv("HTTPS_PROXY")
-
-	client, err := NewClient(
-		TelegramAdapterOptions{
-			Token:  "695845816:AAEH665gpYS9PBoX29xQ6TsTOOLncjNHlGI",
-			ChatId: -369034152,
-			// Привет HelpDesk
-			HttpClient: &http.Client{
-				Transport: &http.Transport{
-					Proxy: func(request *http.Request) (*url.URL, error) {
-						return url.Parse("http://192.168.7.32:8888/")
-					},
-				},
-			},
-		},
-		PosixAdapterOptions{
-			SmtpAddr: "vps3232.mtu.immo:25",
-			To:       []string{"zharikov@immo.ru"},
-		},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = client.Send("Hello", []Line{
+	testSubject := "Hello"
+	testMessage := []Line{
 		C("Hello world"),
 		C(B("bold"), " text"),
-	})
-	if err != nil {
-		t.Fatal(err)
+	}
+
+	client, err := NewClient(
+		func() (adapter Adapter, err error) {
+			m := &MockAdapter{}
+			m.
+				On("Send", testSubject, testMessage).
+				Return(nil).
+				Run(func(args mock.Arguments) {
+					subject := args.Get(0).(string)
+					require.Equal(t, testSubject, subject)
+
+					message := args.Get(1).([]Line)
+					require.Equal(t, testMessage, message)
+				})
+			return m, nil
+		},
+	)
+	require.NoError(t, err)
+
+	errs := client.Send(testSubject, testMessage...)
+	for _, err := range errs {
+		require.NoError(t, err)
 	}
 }

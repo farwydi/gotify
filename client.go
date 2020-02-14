@@ -1,36 +1,37 @@
 package gotify
 
-type Client struct {
-	adapters []adapter
-}
+import "errors"
 
-func (c *Client) Send(subject string, message []Line) error {
-	for _, ad := range c.adapters {
-		err := ad.send(subject, message...)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-type Options interface {
-	init() (adapter, error)
-}
-
-func NewClient(opts ...Options) (*Client, error) {
+func NewClient(adaptersInit ...func() (adapter Adapter, err error)) (*Client, error) {
 	client := &Client{}
-	for _, o := range opts {
 
+	for _, init := range adaptersInit {
 		// Init adapter
-		ad, err := o.init()
+		adapter, err := init()
 		if err != nil {
 			return nil, err
 		}
 
-		client.adapters = append(client.adapters, ad)
+		client.adapters = append(client.adapters, adapter)
+	}
+
+	if len(client.adapters) == 0 {
+		return nil, errors.New("newClient: adapter list is empty, please add one adapter")
 	}
 
 	return client, nil
+}
+
+type Client struct {
+	adapters []Adapter
+}
+
+func (c Client) Send(subject string, message ...Line) (errs []error) {
+	for _, adapter := range c.adapters {
+		if err := adapter.Send(subject, message...); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errs
 }
