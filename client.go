@@ -2,6 +2,22 @@ package gotify
 
 import "errors"
 
+func MustClient(adaptersInit ...func() (adapter Adapter, err error)) *Client {
+	client := &Client{}
+
+	for _, init := range adaptersInit {
+		// Init adapter
+		adapter, err := init()
+		if err != nil {
+			continue
+		}
+
+		client.adapters = append(client.adapters, adapter)
+	}
+
+	return client
+}
+
 func NewClient(adaptersInit ...func() (adapter Adapter, err error)) (*Client, error) {
 	client := &Client{}
 
