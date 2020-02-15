@@ -11,9 +11,7 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
 
-      - run:
-        name: Testing
-        command: go test all
+      - run: go test all
 
       - save_cache:
           key: go-mod-v1-{{ checksum "go.sum" }}
