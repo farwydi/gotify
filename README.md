@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/farwydi/gotify.svg?branch=master)](https://travis-ci.org/farwydi/gotify)
+[![codecov](https://codecov.io/gh/farwydi/gotify/branch/master/graph/badge.svg)](https://codecov.io/gh/farwydi/gotify)
+
 # gotify
 Send message anywhere
 
