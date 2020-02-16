@@ -1,9 +1,10 @@
 package gotify
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestNewClient(t *testing.T) {

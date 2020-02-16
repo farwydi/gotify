@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/Syfaro/telegram-bot-api"
 	"github.com/farwydi/gotify"
 	"github.com/go-resty/resty/v2"
-	"strings"
 )
 
 func NewTelegramAdapter(token string, chatId int64) func() (gotify.Adapter, error) {

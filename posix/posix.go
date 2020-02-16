@@ -3,9 +3,10 @@ package posix
 import (
 	"encoding/base64"
 	"errors"
-	"github.com/farwydi/gotify"
 	"net/smtp"
 	"strings"
+
+	"github.com/farwydi/gotify"
 )
 
 func NewPosixAdapter(from string, to []string, smtpAddr string) func() (gotify.Adapter, error) {

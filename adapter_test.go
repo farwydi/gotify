@@ -1,6 +1,8 @@
 package gotify
 
-import "github.com/stretchr/testify/mock"
+import (
+	"github.com/stretchr/testify/mock"
+)
 
 type MockAdapter struct {
 	mock.Mock

@@ -1,9 +1,10 @@
 package posix
 
 import (
+	"testing"
+
 	"github.com/farwydi/gotify"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestPosix(t *testing.T) {

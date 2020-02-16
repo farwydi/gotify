@@ -1,11 +1,12 @@
 package telegram
 
 import (
+	"testing"
+
 	"github.com/farwydi/gotify"
 	"github.com/go-resty/resty/v2"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestTelegramAdapter_Format(t *testing.T) {
