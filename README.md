@@ -4,6 +4,9 @@
 # gotify
 Send message anywhere
 
+## Install
+`go get github.com/farwydi/gotify`
+
 ## Adapters
 
 ### Telegram
