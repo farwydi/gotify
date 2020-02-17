@@ -17,3 +17,8 @@ func (ad *MockAdapter) Send(subject string, message ...Line) error {
 	args := ad.Called(subject, message)
 	return args.Error(0)
 }
+
+func (ad *MockAdapter) SendRaw(p []byte) error {
+	args := ad.Called(p)
+	return args.Error(0)
+}
