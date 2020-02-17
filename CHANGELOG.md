@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/farwydi/gotify/compare/v1.1.0...v1.2.0) (2020-02-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** Rename SendRaw to SendWithoutFormatting
+
+### Features
+
+* **core:** add method SendRaw ([90bb763](https://github.com/farwydi/gotify/commit/90bb763b9fcf86e0078b176d54e01fc7e5a1a076))
+
+
+* **core:** send raw impl ([1186f0d](https://github.com/farwydi/gotify/commit/1186f0d72ef38427e6682f388925d112dd759bf3))
+
 ## [1.1.0](https://github.com/farwydi/gotify/compare/v1.0.0...v1.1.0) (2020-02-17)
 
 
