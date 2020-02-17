@@ -152,6 +152,6 @@ func (ad posixAdapter) Send(subject string, message ...gotify.Line) error {
 	return c.Quit()
 }
 
-func (ad posixAdapter) SendRaw(p []byte) error {
+func (ad posixAdapter) SendWithoutFormatting(p []byte) error {
 	panic("implement me")
 }

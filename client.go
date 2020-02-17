@@ -51,13 +51,3 @@ func (c Client) Send(subject string, message ...Line) (errs []error) {
 
 	return errs
 }
-
-func (c Client) SendRaw(p []byte) (errs []error) {
-	for _, adapter := range c.adapters {
-		if err := adapter.SendRaw(p); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	return errs
-}

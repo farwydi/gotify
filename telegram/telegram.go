@@ -159,17 +159,19 @@ func (ad telegramAdapter) Send(subject string, message ...gotify.Line) error {
 	return nil
 }
 
-func (ad telegramAdapter) SendRaw(p []byte) error {
-	_, err := ad.tgApi.Send(tgbotapi.MessageConfig{
-		BaseChat: tgbotapi.BaseChat{
-			ChatID: ad.chatId,
-		},
-		Text:                  string(p),
-		ParseMode:             "markdown",
-		DisableWebPagePreview: true,
-	})
-	if err != nil {
-		return err
+func (ad telegramAdapter) SendWithoutFormatting(p []byte) error {
+	for _, chatId := range ad.chatIds {
+		_, err := ad.tgApi.Send(tgbotapi.MessageConfig{
+			BaseChat: tgbotapi.BaseChat{
+				ChatID: chatId,
+			},
+			Text:                  string(p),
+			ParseMode:             "markdown",
+			DisableWebPagePreview: true,
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

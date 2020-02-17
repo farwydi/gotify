@@ -18,7 +18,7 @@ func (ad *MockAdapter) Send(subject string, message ...Line) error {
 	return args.Error(0)
 }
 
-func (ad *MockAdapter) SendRaw(p []byte) error {
+func (ad *MockAdapter) SendWithoutFormatting(p []byte) error {
 	args := ad.Called(p)
 	return args.Error(0)
 }
