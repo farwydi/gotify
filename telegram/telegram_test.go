@@ -18,7 +18,7 @@ func TestTelegramAdapter_Format(t *testing.T) {
 	fakeUrl := "https://api.telegram.org/bot1/getMe"
 	httpmock.RegisterResponder("POST", fakeUrl, responder)
 
-	init := NewTelegramAdapterWithHttp("1", 1, client)
+	init := NewTelegramAdapterWithHttp("1", []int64{1}, client)
 	adapter, err := init()
 	require.NoError(t, err)
 
