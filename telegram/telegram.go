@@ -11,11 +11,11 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func NewTelegramAdapter(token string, chatId int64) func() (gotify.Adapter, error) {
-	return NewTelegramAdapterWithHttp(token, chatId, resty.New())
+func NewTelegramAdapter(token string, chatIds []int64) func() (gotify.Adapter, error) {
+	return NewTelegramAdapterWithHttp(token, chatIds, resty.New())
 }
 
-func NewTelegramAdapterWithHttp(token string, chatId int64, client *resty.Client) func() (gotify.Adapter, error) {
+func NewTelegramAdapterWithHttp(token string, chatIds []int64, client *resty.Client) func() (gotify.Adapter, error) {
 	if token == "" {
 		return func() (gotify.Adapter, error) {
 			return nil,
@@ -23,10 +23,10 @@ func NewTelegramAdapterWithHttp(token string, chatId int64, client *resty.Client
 		}
 	}
 
-	if chatId == 0 {
+	if len(chatIds) == 0 {
 		return func() (gotify.Adapter, error) {
 			return nil,
-				errors.New("telegramAdapter: options 'ChatId' must be not equal 0")
+				errors.New("telegramAdapter: options 'ChatId' must be not empty")
 		}
 	}
 
@@ -42,17 +42,17 @@ func NewTelegramAdapterWithHttp(token string, chatId int64, client *resty.Client
 
 	return func() (gotify.Adapter, error) {
 		return &telegramAdapter{
-			tgApi:  bot,
-			chatId: chatId,
-			token:  token,
+			tgApi:   bot,
+			chatIds: chatIds,
+			token:   token,
 		}, nil
 	}
 }
 
 type telegramAdapter struct {
-	tgApi  *tgbotapi.BotAPI
-	chatId int64
-	token  string
+	tgApi   *tgbotapi.BotAPI
+	chatIds []int64
+	token   string
 }
 
 func escaped(t []byte) []byte {
@@ -143,17 +143,17 @@ func (ad telegramAdapter) Send(subject string, message ...gotify.Line) error {
 	// Компиляция
 	msg := fmt.Sprintf("*%s*\n%s", subject, ad.Format(message))
 
-	_, err := ad.tgApi.Send(tgbotapi.MessageConfig{
-		BaseChat: tgbotapi.BaseChat{
-			ChatID:           ad.chatId,
-			ReplyToMessageID: 0,
-		},
-		Text:                  msg,
-		ParseMode:             "markdown",
-		DisableWebPagePreview: false,
-	})
-	if err != nil {
-		return err
+	for _, chatId := range ad.chatIds {
+		_, err := ad.tgApi.Send(tgbotapi.MessageConfig{
+			BaseChat: tgbotapi.BaseChat{
+				ChatID: chatId,
+			},
+			Text:      msg,
+			ParseMode: "markdown",
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
