@@ -8,8 +8,6 @@ type CODE TextElement
 // Concatenation line
 func C(text ...interface{}) (c Line) {
 	c = make(Line, len(text))
-	for i, tx := range text {
-		c[i] = tx
-	}
+	copy(c, text)
 	return c
 }
